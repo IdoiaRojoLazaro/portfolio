@@ -1,42 +1,85 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+@import 'tailwindcss';
+
+/* VS Code Dark Theme Colors */
+@theme {
+  /* Background colors */
+  --color-vscode-black: #1e1e1e;
+  --color-vscode-fg: #d4d4d4;
+  --color-vscode-border: #3e3e42;
+  --color-vscode-card: #252526;
+
+  /* Syntax highlighting */
+  --color-syntax-keyword: #569cd6;
+  --color-syntax-class: #4ec9b0;
+  --color-syntax-function: #4fc1ff;
+  --color-syntax-variable: #9cdcfe;
+  --color-syntax-string: #ce9178;
+  --color-syntax-comment: #6a9955;
+  --color-syntax-import: #c586c0;
+
+  /* UI accent colors */
+  --color-accent-success: #4ec9b0;
+  --color-accent-error: #f48771;
+  --color-accent-warning: #d4a574;
+  --color-accent-info: #569cd6;
+
+  /* Category colors */
+  --color-cat-architecture: #d4a574;
+  --color-cat-project: #4ec9b0;
+  --color-cat-incident: #f48771;
+  --color-cat-process: #569cd6;
+  --color-cat-research: #c586c0;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Custom Animations */
+@keyframes pulse-drag {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateX(0);
   }
-  to {
-    transform: rotate(360deg);
+  50% {
+    opacity: 0.6;
+    transform: translateX(-10px);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@layer utilities {
+  .animate-pulse-drag {
+    animation: pulse-drag 2s ease-in-out infinite;
+  }
+
+  .font-mono {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+
+  .font-sans {
+    font-family: system-ui, -apple-system, sans-serif;
   }
 }
 
-.card {
-  padding: 2em;
+/* Base styles */
+body {
+  @apply bg-vscode-black text-vscode-fg font-mono text-sm;
 }
 
-.read-the-docs {
-  color: #888;
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  * {
+    color: black !important;
+    background: white !important;
+  }
+
+  h1,
+  h2 {
+    color: #333 !important;
+  }
 }

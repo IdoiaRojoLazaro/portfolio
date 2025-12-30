@@ -1,1 +1,5 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-vscode-bg: '#1E1E1E';
+}

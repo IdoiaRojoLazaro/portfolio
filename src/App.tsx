@@ -1,35 +1,88 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, {useState} from 'react';
+import {HomeView} from './components/views/HomeView';
+import {ConsoleView} from './components/views/ConsoleView';
+import {CVView} from './components/views/CVView';
+import {ActivityView} from './components/views/ActivityView';
+import {useCommands} from './hooks/useCommands';
+import {CATEGORIES} from './utils/constants';
+import './App.css'; // Import Tailwind 4 CSS
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Navigation state
+  const [currentView, setCurrentView] = useState('home');
+  const [commandInput, setCommandInput] = useState('');
+  const [commandHistory, setCommandHistory] = useState([]);
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  // Activity filters
+  const [selectedCategories, setSelectedCategories] = useState(
+    Object.keys(CATEGORIES)
+  );
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Command execution hook
+  const {executeCommand} = useCommands(
+    currentView,
+    setCurrentView,
+    setCommandHistory,
+    setSelectedCategories,
+    setSearchTerm
+  );
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      executeCommand(commandInput, commandHistory);
+      setCommandInput('');
+    }
+  };
+
+  const handleVeilComplete = () => {
+    setCurrentView('console');
+    setCommandHistory([
+      {type: 'success', text: 'Welcome! Type "help" to see available commands'},
+    ]);
+  };
+
+  // Render views
+  if (currentView === 'home') {
+    return <HomeView onComplete={handleVeilComplete} />;
+  }
+
+  if (currentView === 'console') {
+    return (
+      <ConsoleView
+        commandInput={commandInput}
+        setCommandInput={setCommandInput}
+        handleKeyDown={handleKeyDown}
+        commandHistory={commandHistory}
+      />
+    );
+  }
+
+  if (currentView === 'cv') {
+    return (
+      <CVView
+        commandInput={commandInput}
+        setCommandInput={setCommandInput}
+        handleKeyDown={handleKeyDown}
+        commandHistory={commandHistory}
+      />
+    );
+  }
+
+  if (currentView === 'activity') {
+    return (
+      <ActivityView
+        commandInput={commandInput}
+        setCommandInput={setCommandInput}
+        handleKeyDown={handleKeyDown}
+        commandHistory={commandHistory}
+        selectedCategories={selectedCategories}
+        searchTerm={searchTerm}
+      />
+    );
+  }
+
+  return <div>View: {currentView}</div>;
 }
 
-export default App
+export default App;
