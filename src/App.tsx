@@ -1,17 +1,19 @@
 import React, {useState} from 'react';
-import {HomeView} from './components/views/HomeView';
+import './App.css';
+import {ActivityView} from './components/views/ActivityView';
 import {ConsoleView} from './components/views/ConsoleView';
 import {CVView} from './components/views/CVView';
-import {ActivityView} from './components/views/ActivityView';
-import {useCommands} from './hooks/useCommands';
+import {HomeView} from './components/views/HomeView';
 import {CATEGORIES} from './utils/constants';
-import './App.css'; // Import Tailwind 4 CSS
+import {useCommands} from './hooks/useCommands';
 
 function App() {
   // Navigation state
   const [currentView, setCurrentView] = useState('home');
   const [commandInput, setCommandInput] = useState('');
-  const [commandHistory, setCommandHistory] = useState([]);
+  const [commandHistory, setCommandHistory] = useState<
+    {type: string; text: string}[]
+  >([]);
 
   // Activity filters
   const [selectedCategories, setSelectedCategories] = useState(
@@ -28,7 +30,7 @@ function App() {
     setSearchTerm
   );
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: {key: string}) => {
     if (e.key === 'Enter') {
       executeCommand(commandInput, commandHistory);
       setCommandInput('');
@@ -39,6 +41,17 @@ function App() {
     setCurrentView('console');
     setCommandHistory([
       {type: 'success', text: 'Welcome! Type "help" to see available commands'},
+    ]);
+  };
+
+  // Función para volver a la consola desde cualquier vista
+  const handleNavigateToConsole = () => {
+    setCurrentView('console');
+    setCommandInput('');
+    // Opcionalmente puedes agregar un mensaje al historial
+    setCommandHistory((prev) => [
+      ...prev,
+      {type: 'info', text: 'Returned to console. Type "help" for commands.'},
     ]);
   };
 
@@ -65,6 +78,7 @@ function App() {
         setCommandInput={setCommandInput}
         handleKeyDown={handleKeyDown}
         commandHistory={commandHistory}
+        handleNavigateToConsole={handleNavigateToConsole}
       />
     );
   }
@@ -78,6 +92,7 @@ function App() {
         commandHistory={commandHistory}
         selectedCategories={selectedCategories}
         searchTerm={searchTerm}
+        handleNavigateToConsole={handleNavigateToConsole}
       />
     );
   }
