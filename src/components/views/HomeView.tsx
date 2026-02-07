@@ -1,11 +1,15 @@
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {ParticleText} from './ParticleText';
+
+interface HomeViewProps {
+  onComplete: () => void;
+}
 
 /**
  * HomeView con efecto de partículas
  * Cambia de vista al hacer click, presionar SPACE o ENTER
  */
-export const HomeView = ({onComplete}) => {
+export const HomeView = ({onComplete}: HomeViewProps) => {
   const [showVeil, setShowVeil] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -16,7 +20,7 @@ export const HomeView = ({onComplete}) => {
   };
 
   useEffect(() => {
-    const handleKeyPress = (e) => {
+    const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         handleTransition();

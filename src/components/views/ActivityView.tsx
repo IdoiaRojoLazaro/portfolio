@@ -1,13 +1,28 @@
-import React, {useMemo} from 'react';
+import {useMemo} from 'react';
 import {activityEntries} from '../../data/activityData';
 import {PATH_CONSOLE, CATEGORIES} from '../../utils/constants';
 import {CommandTerminal} from '../CommandTerminal';
 import {WindowControls} from '../WindowControls';
 
+type CategoryKey = keyof typeof CATEGORIES;
+
+interface ActivityEntry {
+  date: string;
+  title: string;
+  category: string;
+  description: string;
+  tags: string[];
+}
+
+interface GroupedMonth {
+  label: string;
+  entries: ActivityEntry[];
+}
+
 interface Props {
   commandInput: string;
-  setCommandInput: React.Dispatch<React.SetStateAction<string>>;
-  handleKeyDown: (e: any) => void;
+  setCommandInput: (value: string | ((prev: string) => string)) => void;
+  handleKeyDown: (e: { key: string }) => void;
   commandHistory: {type: string; text: string}[];
   selectedCategories: string[];
   searchTerm: string;
@@ -39,7 +54,7 @@ export const ActivityView = ({
       return matchesCategory && matchesSearch;
     });
 
-    const grouped = filtered.reduce((acc, entry) => {
+    const grouped = filtered.reduce<Record<string, GroupedMonth>>((acc, entry) => {
       const date = new Date(entry.date);
       const monthKey = `${date.getFullYear()}-${String(
         date.getMonth() + 1
@@ -62,26 +77,26 @@ export const ActivityView = ({
     return Object.entries(grouped).sort((a, b) => b[0].localeCompare(a[0]));
   }, [selectedCategories, searchTerm]);
 
-  const getCategoryColor = (category) => {
-    const colorMap = {
+  const getCategoryColor = (category: string): string => {
+    const colorMap: Record<string, string> = {
       architecture: 'text-cat-architecture',
       project: 'text-cat-project',
       incident: 'text-cat-incident',
       process: 'text-cat-process',
       research: 'text-cat-research',
     };
-    return colorMap[category] || 'text-gray-500';
+    return colorMap[category] ?? 'text-gray-500';
   };
 
-  const getCategoryBgColor = (category) => {
-    const colorMap = {
+  const getCategoryBgColor = (category: string): string => {
+    const colorMap: Record<string, string> = {
       architecture: 'bg-cat-architecture',
       project: 'bg-cat-project',
       incident: 'bg-cat-incident',
       process: 'bg-cat-process',
       research: 'bg-cat-research',
     };
-    return colorMap[category] || 'bg-gray-500';
+    return colorMap[category] ?? 'bg-gray-500';
   };
 
   return (
@@ -121,7 +136,7 @@ export const ActivityView = ({
                 cat
               )}`}
             >
-              {CATEGORIES[cat].label}
+              {cat in CATEGORIES ? CATEGORIES[cat as CategoryKey].label : cat}
             </span>
           ))}
           {searchTerm && (
@@ -139,7 +154,7 @@ export const ActivityView = ({
               <div className='text-xs mt-2'>Use "clear" to reset filters</div>
             </div>
           ) : (
-            groupedEntries.map(([monthKey, {label, entries}]) => (
+            groupedEntries.map(([monthKey, monthData]: [string, GroupedMonth]) => (
               <div key={monthKey}>
                 <div className='mb-4 sticky top-0 bg-vscode-bg py-2 z-10'>
                   <div className='text-gray-500 text-xs mb-1'>
@@ -148,12 +163,12 @@ export const ActivityView = ({
                   <div className='text-lg text-syntax-function'>
                     <span className='text-syntax-keyword'>export</span>{' '}
                     <span className='text-vscode-fg'>const</span>{' '}
-                    {label.toLowerCase().replace(' ', '_')} = {'{'}
+                    {monthData.label.toLowerCase().replace(' ', '_')} = {'{'}
                   </div>
                 </div>
 
                 <div className='ml-6 border-l-2 border-vscode-border pl-6 flex flex-col gap-3'>
-                  {entries.map((entry, idx) => (
+                  {monthData.entries.map((entry: ActivityEntry, idx: number) => (
                     <div key={idx} className='relative'>
                       <div
                         className={`absolute -left-[29px] top-2 w-2 h-2 rounded-full border-2 border-vscode-bg ${getCategoryBgColor(
@@ -166,7 +181,7 @@ export const ActivityView = ({
                           <div className='text-gray-500 text-xs mb-1'>
                             [{entry.date}]{' '}
                             <span className={getCategoryColor(entry.category)}>
-                              {CATEGORIES[entry.category].label}
+                              {entry.category in CATEGORIES ? CATEGORIES[entry.category as CategoryKey].label : entry.category}
                             </span>
                           </div>
                           <div className='text-vscode-fg font-medium mb-2'>
@@ -179,7 +194,7 @@ export const ActivityView = ({
 
                         {entry.tags && entry.tags.length > 0 && (
                           <div className='flex gap-2 flex-wrap mt-3'>
-                            {entry.tags.map((tag, tagIdx) => (
+                            {entry.tags.map((tag: string, tagIdx: number) => (
                               <span
                                 key={tagIdx}
                                 className='text-xs px-2 py-0.5 bg-vscode-bg border border-vscode-border text-syntax-string'
@@ -204,7 +219,7 @@ export const ActivityView = ({
           <span>// EOF</span>
           <span>
             {groupedEntries.reduce(
-              (acc, [_, {entries}]) => acc + entries.length,
+              (acc: number, [_key, monthData]: [string, GroupedMonth]) => acc + monthData.entries.length,
               0
             )}{' '}
             total entries

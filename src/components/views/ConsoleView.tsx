@@ -1,18 +1,31 @@
-import React from 'react';
 import {CommandTerminal} from '../CommandTerminal';
 import {WindowControls} from '../WindowControls';
 import {PATH_CONSOLE} from '../../utils/constants';
+
+interface CommandHistoryItem {
+  type: string;
+  text: string;
+}
+
+interface Props {
+  commandInput: string;
+  setCommandInput: (value: string | ((prev: string) => string)) => void;
+  handleKeyDown: (e: { key: string }) => void;
+  commandHistory: CommandHistoryItem[];
+  handleNavigateToConsole: () => void;
+}
 
 export const ConsoleView = ({
   commandInput,
   setCommandInput,
   handleKeyDown,
   commandHistory,
-}) => (
+  handleNavigateToConsole,
+}: Props) => (
   <div className='min-h-screen bg-vscode-bg text-vscode-fg font-mono text-sm'>
     <div className='max-w-6xl mx-auto px-6 py-8'>
       <div className='mb-6 border-b border-vscode-border pb-4'>
-        <WindowControls path={PATH_CONSOLE} />
+        <WindowControls path={PATH_CONSOLE} handleNavigateToConsole={handleNavigateToConsole} />
         <div className='text-xs text-gray-500'>
           <span className='text-syntax-keyword'>const</span>{' '}
           <span className='text-syntax-function'>welcome</span>{' '}

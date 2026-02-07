@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import {useState} from 'react';
 import './App.css';
 import {ActivityView} from './components/views/ActivityView';
 import {ConsoleView} from './components/views/ConsoleView';
@@ -67,6 +67,7 @@ function App() {
         setCommandInput={setCommandInput}
         handleKeyDown={handleKeyDown}
         commandHistory={commandHistory}
+        handleNavigateToConsole={handleNavigateToConsole}
       />
     );
   }

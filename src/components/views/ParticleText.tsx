@@ -1,4 +1,31 @@
-import React, {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef} from 'react';
+
+interface Particle {
+  baseX: number;
+  baseY: number;
+  x: number;
+  y: number;
+  color: string;
+  size: number;
+  density: number;
+  vx: number;
+  vy: number;
+  draw(ctx: CanvasRenderingContext2D): void;
+  update(): void;
+}
+
+interface ParticleTextProps {
+  text?: string;
+  particleGap?: number;
+  particleSize?: number;
+  mouseRadius?: number;
+  returnSpeed?: number;
+  mouseForce?: number;
+  colors?: string[];
+  fontSize?: number;
+  fontFamily?: string;
+  className?: string;
+}
 
 /**
  * ParticleText Component
@@ -15,63 +42,85 @@ export const ParticleText = ({
   fontSize = 120,
   fontFamily = 'Arial',
   className = '',
-}) => {
-  const canvasRef = useRef(null);
-  const particlesRef = useRef([]);
-  const mouseRef = useRef({x: null, y: null, radius: mouseRadius});
-  const animationRef = useRef(null);
+}: ParticleTextProps) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const mouseRef = useRef<{x: number | null; y: number | null; radius: number}>({
+    x: null,
+    y: null,
+    radius: mouseRadius,
+  });
+  const animationRef = useRef<number | null>(null);
 
-  // Particle class
-  class Particle {
-    constructor(x, y, color) {
-      this.baseX = x;
-      this.baseY = y;
-      this.x = x;
-      this.y = y;
-      this.color = color;
-      this.size = particleSize;
-      this.density = Math.random() * 30 + 1;
-      this.vx = 0;
-      this.vy = 0;
-    }
+  // Create particle factory (replaces class for proper typing)
+  const createParticle = (
+    x: number,
+    y: number,
+    color: string
+  ): Particle => {
+    const particle: Particle = {
+      baseX: x,
+      baseY: y,
+      x,
+      y,
+      color,
+      size: particleSize,
+      density: Math.random() * 30 + 1,
+      vx: 0,
+      vy: 0,
+      draw(ctx: CanvasRenderingContext2D) {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+      },
+      update() {
+        const mouse = mouseRef.current;
+        const mouseX = mouse.x;
+        const mouseY = mouse.y;
+        if (mouseX === null || mouseY === null) {
+          particle.vx += (particle.baseX - particle.x) * returnSpeed;
+          particle.vy += (particle.baseY - particle.y) * returnSpeed;
+          particle.vx *= 0.85;
+          particle.vy *= 0.85;
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+          return;
+        }
+        let dx = mouseX - particle.x;
+        let dy = mouseY - particle.y;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let forceDirectionX = dx / distance;
+        let forceDirectionY = dy / distance;
+        let maxDistance = mouse.radius;
+        let force = (maxDistance - distance) / maxDistance;
+        let directionX = forceDirectionX * force * particle.density * mouseForce;
+        let directionY = forceDirectionY * force * particle.density * mouseForce;
 
-    draw(ctx) {
-      ctx.fillStyle = this.color;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.closePath();
-      ctx.fill();
-    }
+        if (distance < mouse.radius) {
+          particle.vx -= directionX;
+          particle.vy -= directionY;
+        } else {
+          particle.vx += (particle.baseX - particle.x) * returnSpeed;
+          particle.vy += (particle.baseY - particle.y) * returnSpeed;
+        }
 
-    update() {
-      const mouse = mouseRef.current;
-      let dx = mouse.x - this.x;
-      let dy = mouse.y - this.y;
-      let distance = Math.sqrt(dx * dx + dy * dy);
-      let forceDirectionX = dx / distance;
-      let forceDirectionY = dy / distance;
-      let maxDistance = mouse.radius;
-      let force = (maxDistance - distance) / maxDistance;
-      let directionX = forceDirectionX * force * this.density * mouseForce;
-      let directionY = forceDirectionY * force * this.density * mouseForce;
-
-      if (distance < mouse.radius) {
-        this.vx -= directionX;
-        this.vy -= directionY;
-      } else {
-        this.vx += (this.baseX - this.x) * returnSpeed;
-        this.vy += (this.baseY - this.y) * returnSpeed;
-      }
-
-      this.vx *= 0.85;
-      this.vy *= 0.85;
-      this.x += this.vx;
-      this.y += this.vy;
-    }
-  }
+        particle.vx *= 0.85;
+        particle.vy *= 0.85;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+      },
+    };
+    return particle;
+  };
 
   // Create particles from text
-  const createParticles = (canvas, ctx, textContent) => {
+  const createParticles = (
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+    textContent: string
+  ) => {
     particlesRef.current = [];
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -94,7 +143,7 @@ export const ParticleText = ({
 
         if (alpha > 128) {
           const color = colors[Math.floor(Math.random() * colors.length)];
-          particlesRef.current.push(new Particle(x, y, color));
+          particlesRef.current.push(createParticle(x, y, color));
         }
       }
     }
@@ -111,10 +160,13 @@ export const ParticleText = ({
   };
 
   // Animation loop
-  const animate = (canvas, ctx) => {
+  const animate = (
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D
+  ) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let particle of particlesRef.current) {
+    for (const particle of particlesRef.current) {
       particle.update();
       particle.draw(ctx);
     }
@@ -128,6 +180,7 @@ export const ParticleText = ({
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     // Resize canvas
     const resizeCanvas = () => {
@@ -140,7 +193,7 @@ export const ParticleText = ({
     window.addEventListener('resize', resizeCanvas);
 
     // Mouse events
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       mouseRef.current.x = e.clientX - rect.left;
       mouseRef.current.y = e.clientY - rect.top;
@@ -152,12 +205,14 @@ export const ParticleText = ({
     };
 
     // Touch events
-    const handleTouchMove = (e) => {
+    const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
-      mouseRef.current.x = touch.clientX - rect.left;
-      mouseRef.current.y = touch.clientY - rect.top;
+      if (touch) {
+        mouseRef.current.x = touch.clientX - rect.left;
+        mouseRef.current.y = touch.clientY - rect.top;
+      }
     };
 
     const handleTouchEnd = () => {
@@ -180,7 +235,7 @@ export const ParticleText = ({
       canvas.removeEventListener('mouseleave', handleMouseLeave);
       canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('touchend', handleTouchEnd);
-      if (animationRef.current) {
+      if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current);
       }
     };

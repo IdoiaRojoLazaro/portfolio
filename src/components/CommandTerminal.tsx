@@ -1,6 +1,17 @@
-import React from 'react';
+interface CommandHistoryItem {
+  type: string;
+  text: string;
+}
 
-export const CommandTerminal = ({ commandInput, setCommandInput, handleKeyDown, commandHistory, placeholder }) => (
+interface Props {
+  commandInput: string;
+  setCommandInput: (value: string) => void;
+  handleKeyDown: (e: { key: string }) => void;
+  commandHistory: CommandHistoryItem[];
+  placeholder?: string;
+}
+
+export const CommandTerminal = ({ commandInput, setCommandInput, handleKeyDown, commandHistory, placeholder }: Props) => (
   <div className="mb-6 bg-vscode-card border border-vscode-border p-4">
     <div className="flex items-center gap-2 mb-3">
       <span className="text-accent-success">➜</span>
@@ -18,7 +29,7 @@ export const CommandTerminal = ({ commandInput, setCommandInput, handleKeyDown, 
 
     {commandHistory.length > 0 && (
       <div className="text-xs max-h-32 overflow-y-auto">
-        {commandHistory.slice(-5).map((item, idx) => (
+        {commandHistory.slice(-5).map((item: CommandHistoryItem, idx: number) => (
           <div
             key={idx}
             className={`mb-1 ${

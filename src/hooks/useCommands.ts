@@ -1,10 +1,18 @@
+import type { Dispatch, SetStateAction } from 'react';
 import { CATEGORIES } from '../utils/constants';
 
-export const useCommands = (currentView, setCurrentView, setCommandHistory, setSelectedCategories, setSearchTerm) => {
-  
-  const executeConsoleCommand = (trimmed, original) => {
+type CommandHistoryItem = { type: string; text: string };
+
+export const useCommands = (
+  currentView: string,
+  setCurrentView: (view: string) => void,
+  setCommandHistory: Dispatch<SetStateAction<CommandHistoryItem[]>>,
+  setSelectedCategories: (categories: string[] | ((prev: string[]) => string[])) => void,
+  setSearchTerm: (term: string) => void
+) => {
+  const executeConsoleCommand = (trimmed: string, original: string) => {
     if (trimmed === 'help') {
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'output', text: 'Available commands:' },
         { type: 'output', text: '  show cv        - Display curriculum vitae' },
@@ -24,16 +32,16 @@ export const useCommands = (currentView, setCurrentView, setCommandHistory, setS
     } else if (trimmed === '') {
       return;
     } else {
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'error', text: `Command not recognized: "${original}". Type "help" for available commands` }
       ]);
     }
   };
 
-  const executeCVCommand = (trimmed, original) => {
+  const executeCVCommand = (trimmed: string, original: string) => {
     if (trimmed === 'help') {
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'output', text: 'Available commands:' },
         { type: 'output', text: '  print          - Print CV' },
@@ -43,13 +51,13 @@ export const useCommands = (currentView, setCurrentView, setCommandHistory, setS
       ]);
     } else if (trimmed === 'print') {
       window.print();
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'success', text: 'Opening print dialog...' }
       ]);
     } else if (trimmed === 'export pdf') {
       window.print();
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'success', text: 'Opening print dialog... (select "Save as PDF")' }
       ]);
@@ -59,16 +67,16 @@ export const useCommands = (currentView, setCurrentView, setCommandHistory, setS
     } else if (trimmed === '') {
       return;
     } else {
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'error', text: `Command not recognized: "${original}". Type "help" for available commands` }
       ]);
     }
   };
 
-  const executeActivityCommand = (trimmed, original, commandHistory) => {
+  const executeActivityCommand = (trimmed: string, original: string, commandHistory: CommandHistoryItem[]) => {
     if (trimmed === 'help') {
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'output', text: 'Available commands:' },
         { type: 'output', text: '  filter:<category>  - Filter by category (architecture|project|incident|process|research)' },
@@ -82,13 +90,13 @@ export const useCommands = (currentView, setCurrentView, setCommandHistory, setS
     } else if (trimmed === 'clear') {
       setSelectedCategories(Object.keys(CATEGORIES));
       setSearchTerm('');
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'success', text: 'Filters cleared' }
       ]);
     } else if (trimmed === 'show all') {
       setSelectedCategories(Object.keys(CATEGORIES));
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'success', text: 'Showing all categories' }
       ]);
@@ -105,10 +113,10 @@ export const useCommands = (currentView, setCurrentView, setCommandHistory, setS
         '',
         'COMMAND HISTORY:',
         '-'.repeat(60),
-        ...commandHistory.map(h => `${h.type === 'command' ? '> ' : '  '}${h.text}`),
+        ...commandHistory.map((h: CommandHistoryItem) => `${h.type === 'command' ? '> ' : '  '}${h.text}`),
         '',
         '-'.repeat(60),
-        `Total commands executed: ${commandHistory.filter(h => h.type === 'command').length}`,
+        `Total commands executed: ${commandHistory.filter((h: CommandHistoryItem) => h.type === 'command').length}`,
         `Session ended: ${new Date().toISOString()}`,
         '='.repeat(60)
       ].join('\n');
@@ -123,7 +131,7 @@ export const useCommands = (currentView, setCurrentView, setCommandHistory, setS
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'success', text: 'Session log exported successfully' }
       ]);
@@ -131,12 +139,12 @@ export const useCommands = (currentView, setCurrentView, setCommandHistory, setS
       const category = trimmed.replace('filter:', '').trim();
       if (Object.keys(CATEGORIES).includes(category)) {
         setSelectedCategories([category]);
-        setCommandHistory(prev => [...prev,
+        setCommandHistory((prev) => [...prev,
           { type: 'command', text: original },
           { type: 'success', text: `Filtering by: ${category}` }
         ]);
       } else {
-        setCommandHistory(prev => [...prev,
+        setCommandHistory((prev) => [...prev,
           { type: 'command', text: original },
           { type: 'error', text: `Invalid category: ${category}` }
         ]);
@@ -144,21 +152,21 @@ export const useCommands = (currentView, setCurrentView, setCommandHistory, setS
     } else if (trimmed.startsWith('search:')) {
       const term = original.replace(/search:/i, '').trim();
       setSearchTerm(term);
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'success', text: `Searching: "${term}"` }
       ]);
     } else if (trimmed === '') {
       return;
     } else {
-      setCommandHistory(prev => [...prev,
+      setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'error', text: `Command not recognized: "${original}". Type "help" for available commands` }
       ]);
     }
   };
 
-  const executeCommand = (cmd, commandHistory) => {
+  const executeCommand = (cmd: string, commandHistory: CommandHistoryItem[]) => {
     const trimmed = cmd.trim().toLowerCase();
 
     if (currentView === 'console') {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const useVeilDrag = (onComplete) => {
+export const useVeilDrag = (onComplete: () => void) => {
   const [veilPosition, setVeilPosition] = useState(100);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -17,7 +17,7 @@ export const useVeilDrag = (onComplete) => {
     }
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: MouseEvent) => {
     if (isDragging) {
       const newPosition = (e.clientX / window.innerWidth) * 100;
       setVeilPosition(Math.min(Math.max(newPosition, 0), 100));
