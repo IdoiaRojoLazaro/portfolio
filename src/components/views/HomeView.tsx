@@ -1,21 +1,42 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {ParticleText} from './ParticleText';
 
 interface HomeViewProps {
   onComplete: () => void;
 }
 
+function useResponsiveSize() {
+  const [size, setSize] = useState({ fontSize: 120, particleGap: 4, particleSize: 2 });
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w < 480) {
+        setSize({ fontSize: 44, particleGap: 3, particleSize: 1.5 });
+      } else if (w < 640) {
+        setSize({ fontSize: 56, particleGap: 3, particleSize: 1.5 });
+      } else {
+        setSize({ fontSize: 120, particleGap: 4, particleSize: 2 });
+      }
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  return size;
+}
+
 /**
- * HomeView con efecto de partículas
- * Cambia de vista al hacer click, presionar SPACE o ENTER
+ * HomeView with particle effect. Tap/click or press SPACE/ENTER to continue.
  */
 export const HomeView = ({onComplete}: HomeViewProps) => {
   const [showVeil, setShowVeil] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
+  const { fontSize, particleGap, particleSize } = useResponsiveSize();
+  const readyForInteraction = useRef(false);
 
   const handleTransition = () => {
+    if (!readyForInteraction.current) return;
     setShowVeil(false);
-    // Esperar a que termine la animación antes de llamar onComplete
     setTimeout(onComplete, 1000);
   };
 
@@ -27,8 +48,14 @@ export const HomeView = ({onComplete}: HomeViewProps) => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    const t = setTimeout(() => {
+      readyForInteraction.current = true;
+      window.addEventListener('keydown', handleKeyPress);
+    }, 200);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('keydown', handleKeyPress);
+    };
   }, []);
 
   return (
@@ -46,13 +73,13 @@ export const HomeView = ({onComplete}: HomeViewProps) => {
       >
         <ParticleText
           text='IDOIA ROJO'
-          particleGap={4}
-          particleSize={2}
+          particleGap={particleGap}
+          particleSize={particleSize}
           mouseRadius={100}
           returnSpeed={0.05}
           mouseForce={0.3}
           colors={['#00ff88', '#00ccff', '#ff00ff', '#ffff00']}
-          fontSize={120}
+          fontSize={fontSize}
           fontFamily='Arial'
         />
       </div>
@@ -64,59 +91,62 @@ export const HomeView = ({onComplete}: HomeViewProps) => {
         }`}
       />
 
-      {/* Texto de instrucción */}
+      {/* Instruction text: different copy on mobile (tap) vs desktop (cursor) */}
       <div
-        className={`absolute bottom-8 left-1/2 -translate-x-1/2 text-center transition-all duration-500 ${
+        className={`absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 text-center transition-all duration-500 px-4 w-full max-w-md ${
           showVeil ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        <div className='flex flex-col items-center gap-3'>
-          <span className='text-white/60 text-sm'>
-            Mueve el cursor sobre el texto
+        <div className='flex flex-col items-center gap-2 sm:gap-3'>
+          <span className='text-white/60 text-xs sm:text-sm block sm:hidden'>
+            Tap anywhere to continue
           </span>
-          <div className='flex items-center gap-2'>
-            <span className='text-green-400 text-base font-medium animate-pulse'>
-              Click para continuar
+          <span className='text-white/60 text-xs sm:text-sm hidden sm:block'>
+            Move the cursor over the text
+          </span>
+          <div className='flex items-center gap-2 flex-wrap justify-center'>
+            <span className='text-green-400 text-sm sm:text-base font-medium animate-pulse'>
+              <span className='sm:hidden'>Tap to continue</span>
+              <span className='hidden sm:inline'>Click to continue</span>
             </span>
-            <span className='text-white/40 text-xs'>o presiona SPACE</span>
+            <span className='text-white/40 text-xs'>or press SPACE</span>
           </div>
-          {/* Indicador visual de click */}
-          <div className='mt-2 w-12 h-12 rounded-full border-2 border-green-400/30 flex items-center justify-center animate-ping-slow'>
-            <div className='w-8 h-8 rounded-full border-2 border-green-400/50' />
+          <div className='mt-1 sm:mt-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-green-400/30 flex items-center justify-center animate-ping-slow'>
+            <div className='w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-green-400/50' />
           </div>
         </div>
       </div>
 
-      {/* Indicador de estado */}
+      {/* Status indicator */}
       <div
-        className={`absolute top-8 left-1/2 -translate-x-1/2 transition-opacity duration-500 ${
+        className={`absolute top-4 sm:top-8 left-1/2 -translate-x-1/2 transition-opacity duration-500 ${
           showVeil ? 'opacity-100' : 'opacity-0'
         }`}
       >
         <div className='flex items-center gap-2 text-white/40 text-xs'>
           <div className='w-2 h-2 bg-green-400 rounded-full animate-pulse'></div>
-          <span>Sistema listo</span>
+          <span>System ready</span>
         </div>
       </div>
 
-      {/* Esquinas decorativas (opcional) */}
+      {/* Corner accents */}
       <div
-        className={`absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-green-400/30 transition-opacity duration-500 ${
+        className={`absolute top-2 sm:top-4 left-2 sm:left-4 w-6 h-6 sm:w-8 sm:h-8 border-l-2 border-t-2 border-green-400/30 transition-opacity duration-500 ${
           showVeil ? 'opacity-100' : 'opacity-0'
         }`}
       />
       <div
-        className={`absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-green-400/30 transition-opacity duration-500 ${
+        className={`absolute top-2 sm:top-4 right-2 sm:right-4 w-6 h-6 sm:w-8 sm:h-8 border-r-2 border-t-2 border-green-400/30 transition-opacity duration-500 ${
           showVeil ? 'opacity-100' : 'opacity-0'
         }`}
       />
       <div
-        className={`absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-green-400/30 transition-opacity duration-500 ${
+        className={`absolute bottom-2 sm:bottom-4 left-2 sm:left-4 w-6 h-6 sm:w-8 sm:h-8 border-l-2 border-b-2 border-green-400/30 transition-opacity duration-500 ${
           showVeil ? 'opacity-100' : 'opacity-0'
         }`}
       />
       <div
-        className={`absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-green-400/30 transition-opacity duration-500 ${
+        className={`absolute bottom-2 sm:bottom-4 right-2 sm:right-4 w-6 h-6 sm:w-8 sm:h-8 border-r-2 border-b-2 border-green-400/30 transition-opacity duration-500 ${
           showVeil ? 'opacity-100' : 'opacity-0'
         }`}
       />

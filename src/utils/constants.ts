@@ -43,6 +43,12 @@ export const CATEGORIES = {
   research: {label: 'research', color: COLORS.research},
 };
 
+// Activity roles (for activity log entries)
+export const ACTIVITY_ROLES = {
+  lead: {label: 'Tech Lead', color: COLORS.warning},
+  developer: {label: 'Developer', color: COLORS.info},
+} as const;
+
 // Font families
 export const FONTS = {
   mono: '"Consolas", "Monaco", "Courier New", monospace',

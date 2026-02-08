@@ -26,7 +26,7 @@ export const cvData = {
     },
     {
       title: 'Lead Front-end Developer',
-      company: 'StartupCo',
+      company: 'ifeelOnline',
       period: 'Nov 2022 :: Jan 2025',
       location: 'Madrid, Spain',
       achievements: [
@@ -38,6 +38,20 @@ export const cvData = {
         'Maintained a strong focus on Agile methodologies, overseeing sprint planning, backlog management, and sprint retrospectives to ensure efficient project execution.',
         'Fostered a collaborative team environment by encouraging open communication, problem-solving, and innovation.',
         'Technologies: CI/CD, jira, Bitbucket, scrum, retro, grooming, sprint planning, backlog',
+      ],
+    },
+    {
+      title: 'Front-end Developer',
+      company: 'ifeelOnline',
+      period: 'Apr 2019 :: Nov 2022',
+      location: 'Madrid, Spain',
+      achievements: [
+        'Contributed to the development of multiple online therapy applications, including chat interfaces, dashboards, and other user-facing features.',
+        'Created and maintained a centralized UI component library using Storybook, promoting design consistency and code reusability across applications.',
+        'Developed private npm libraries to encapsulate shared functionalities, enabling efficient code sharing and maintenance within the organization.',
+        'Implemented comprehensive end-to-end testing procedures using Cypress, ensuring the reliability and robustness of applications.',
+        'Build responsive and performant web applications, delivering exceptional user experiences.',
+        '- Technologies: **Vite.js, Redux, Cypress, Git, and Tailwind CSS, Storybook**',
       ],
     },
     {
@@ -100,6 +114,21 @@ export const cvData = {
     'Emerging Tech': ['Web3 (Consensys Academy Certified)'],
   },
   education: [
+    {
+      degree: 'AWS Certified DevOps Engineer Professional 2026 - DOP-C02',
+      institution: 'Udemy',
+      year: 'Jan 2026',
+    },
+    {
+      degree: 'Terraform: Infrastructure as Code',
+      institution: 'Udemy',
+      year: 'Oct 2025',
+    },
+    {
+      degree: 'Playwright: Web Automation Testing',
+      institution: 'Udemy',
+      year: 'May 2025',
+    },
     {
       degree: 'Code Smells & Refactoring en TypeScript ',
       institution: 'Fran Reyes y Manuel Rivero',

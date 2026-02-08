@@ -3,12 +3,15 @@ import { CATEGORIES } from '../utils/constants';
 
 type CommandHistoryItem = { type: string; text: string };
 
+type ActivityRole = 'lead' | 'developer';
+
 export const useCommands = (
   currentView: string,
   setCurrentView: (view: string) => void,
   setCommandHistory: Dispatch<SetStateAction<CommandHistoryItem[]>>,
   setSelectedCategories: (categories: string[] | ((prev: string[]) => string[])) => void,
-  setSearchTerm: (term: string) => void
+  setSearchTerm: (term: string) => void,
+  setSelectedRoles: (roles: ActivityRole[] | ((prev: ActivityRole[]) => ActivityRole[])) => void
 ) => {
   const executeConsoleCommand = (trimmed: string, original: string) => {
     if (trimmed === 'help') {
@@ -22,19 +25,87 @@ export const useCommands = (
       ]);
     } else if (trimmed === 'show cv') {
       setCurrentView('cv');
-      setCommandHistory([{ type: 'success', text: 'Loading CV...' }]);
+      setCommandHistory([{ type: 'success', text: 'CV loaded' }]);
     } else if (trimmed === 'show activity') {
       setCurrentView('activity');
       setSelectedCategories(Object.keys(CATEGORIES));
-      setCommandHistory([{ type: 'success', text: 'Loading activity log...' }]);
+      setSelectedRoles([]);
+      setCommandHistory([{ type: 'success', text: 'Activity log loaded' }]);
     } else if (trimmed === 'clear') {
       setCommandHistory([]);
     } else if (trimmed === '') {
       return;
+    } else if (trimmed === 'sudo' || trimmed === 'sudo su' || trimmed === 'su') {
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'output', text: 'Nice try. This is a portfolio, not a server 😄' },
+        { type: 'output', text: '(You\'re already the only user here.)' }
+      ]);
+    } else if (trimmed.startsWith('rm ') && (trimmed.includes('-rf') || trimmed.includes('rm -rf'))) {
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'error', text: 'rm: cannot remove: read-only filesystem.' },
+        { type: 'output', text: '(Good instincts to not run that for real.)' }
+      ]);
+    } else if (trimmed === 'vim' || trimmed === ':wq' || trimmed === ':q!' || trimmed === ':q') {
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'output', text: 'Escape not found.' },
+        { type: 'output', text: '(Stuck in vim? Try :wq in real life. Here, you\'re safe.)' }
+      ]);
+    } else if (trimmed === 'neofetch' || trimmed === 'screenfetch') {
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'output', text: '       idoia@portfolio' },
+        { type: 'output', text: '       ---------------' },
+        { type: 'output', text: '  OS: Portfolio.js (React)' },
+        { type: 'output', text: '  Kernel: 5.x.x-vite' },
+        { type: 'output', text: '  Shell: /bin/curious' },
+        { type: 'output', text: '  Theme: VS Code Dark' },
+        { type: 'output', text: '  Terminal: your browser' }
+      ]);
+    } else if (trimmed === 'whoami') {
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'output', text: 'idoia' }
+      ]);
+    } else if (trimmed === 'ls' || trimmed === 'ls -la' || trimmed === 'ls -l' || trimmed === 'll') {
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'output', text: 'cv  activity  help  readme  (use show <name>)' }
+      ]);
+    } else if (trimmed === 'cat readme' || trimmed === 'cat README' || trimmed === 'cat readme.md') {
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'output', text: '# Hi there 👋' },
+        { type: 'output', text: 'This portfolio runs on React + Vite. No servers were harmed.' },
+        { type: 'output', text: 'Try: show cv, show activity, or help' }
+      ]);
+    } else if (trimmed === 'exit' || trimmed === 'quit') {
+      setCurrentView('home');
+      setCommandHistory([]);
+    } else if (trimmed === 'hello' || trimmed === 'hello world') {
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'output', text: 'World! 👋' }
+      ]);
+    } else if (trimmed === 'fortune') {
+      const fortunes = [
+        'There are only 10 types of people: those who get binary and those who don\'t.',
+        'sudo make me a sandwich → What? Make it yourself.',
+        'It works on my machine. (It\'s your machine now.)',
+        '// TODO: add more easter eggs'
+      ];
+      const i = Math.floor(Math.random() * fortunes.length);
+      setCommandHistory((prev) => [...prev,
+        { type: 'command', text: original },
+        { type: 'output', text: fortunes[i] }
+      ]);
     } else {
       setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
-        { type: 'error', text: `Command not recognized: "${original}". Type "help" for available commands` }
+        { type: 'error', text: `Command not recognized: "${original}". Type "help" for available commands` },
+        { type: 'output', text: '  (Try: help)' }
       ]);
     }
   };
@@ -80,6 +151,7 @@ export const useCommands = (
         { type: 'command', text: original },
         { type: 'output', text: 'Available commands:' },
         { type: 'output', text: '  filter:<category>  - Filter by category (architecture|project|incident|process|research)' },
+        { type: 'output', text: '  role:lead|developer|all - Filter by activity role' },
         { type: 'output', text: '  search:<text>      - Search in titles and descriptions' },
         { type: 'output', text: '  show all           - Show all categories' },
         { type: 'output', text: '  clear              - Clear filters' },
@@ -90,6 +162,7 @@ export const useCommands = (
     } else if (trimmed === 'clear') {
       setSelectedCategories(Object.keys(CATEGORIES));
       setSearchTerm('');
+      setSelectedRoles([]);
       setCommandHistory((prev) => [...prev,
         { type: 'command', text: original },
         { type: 'success', text: 'Filters cleared' }
@@ -104,6 +177,7 @@ export const useCommands = (
       setCurrentView('console');
       setCommandHistory([]);
       setSearchTerm('');
+      setSelectedRoles([]);
     } else if (trimmed === 'export log') {
       const logContent = [
         '='.repeat(60),
@@ -147,6 +221,26 @@ export const useCommands = (
         setCommandHistory((prev) => [...prev,
           { type: 'command', text: original },
           { type: 'error', text: `Invalid category: ${category}` }
+        ]);
+      }
+    } else if (trimmed.startsWith('role:')) {
+      const roleArg = trimmed.replace('role:', '').trim();
+      if (roleArg === 'all') {
+        setSelectedRoles([]);
+        setCommandHistory((prev) => [...prev,
+          { type: 'command', text: original },
+          { type: 'success', text: 'Showing all roles' }
+        ]);
+      } else if (roleArg === 'lead' || roleArg === 'developer') {
+        setSelectedRoles([roleArg]);
+        setCommandHistory((prev) => [...prev,
+          { type: 'command', text: original },
+          { type: 'success', text: `Filtering by role: ${roleArg}` }
+        ]);
+      } else {
+        setCommandHistory((prev) => [...prev,
+          { type: 'command', text: original },
+          { type: 'error', text: `Invalid role: ${roleArg}. Use lead, developer, or all` }
         ]);
       }
     } else if (trimmed.startsWith('search:')) {

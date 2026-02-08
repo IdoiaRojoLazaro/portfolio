@@ -20,13 +20,22 @@ export const CVView = ({
   handleNavigateToConsole,
 }: Props) => {
   return (
-    <div className='min-h-screen bg-vscode-bg text-vscode-fg font-mono text-sm'>
+    <div className='print-bg-dark min-h-screen bg-vscode-bg text-vscode-fg font-mono text-sm'>
       <div className='max-w-6xl mx-auto px-6 py-8'>
         <div className='no-print mb-6 border-b border-vscode-border pb-4'>
-          <WindowControls
-            path={`${PATH_CONSOLE}/cv`}
-            handleNavigateToConsole={handleNavigateToConsole}
-          />
+          <div className='flex flex-wrap items-center justify-between gap-4'>
+            <WindowControls
+              path={`${PATH_CONSOLE}/cv`}
+              handleNavigateToConsole={handleNavigateToConsole}
+            />
+            <button
+              type='button'
+              onClick={() => window.print()}
+              className='px-3 py-1.5 border border-vscode-border bg-vscode-card text-vscode-fg text-xs font-mono hover:bg-vscode-border/50 transition-colors cursor-pointer'
+            >
+              Print CV
+            </button>
+          </div>
         </div>
 
         <div className='no-print'>
@@ -36,6 +45,7 @@ export const CVView = ({
             handleKeyDown={handleKeyDown}
             commandHistory={commandHistory}
             placeholder='Type "print" to print CV, "back" to return'
+            completions={['help', 'print', 'export pdf', 'back', 'home']}
           />
         </div>
 

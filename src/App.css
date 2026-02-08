@@ -63,23 +63,32 @@ body {
   @apply bg-vscode-black text-vscode-fg font-mono text-sm;
 }
 
-/* Print styles */
+/* Print styles: keep dark theme and accent colors (enable "Background graphics" in print dialog) */
 @media print {
   .no-print {
     display: none !important;
   }
 
+  html,
   body {
-    background: white !important;
+    background: #1e1e1e !important;
+    color: #d4d4d4 !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 
-  * {
-    color: black !important;
-    background: white !important;
+  /* Force dark background on the printed page and CV content */
+  body > #root,
+  body > #root > *,
+  .print-bg-dark {
+    background: #1e1e1e !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 
-  h1,
-  h2 {
-    color: #333 !important;
+  /* Preserve text and accent colors (no white override) */
+  body * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 }
